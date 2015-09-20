@@ -27,15 +27,15 @@ instance (Functor f, Monad m) => Applicative (FreeT f m) where
     pure =
         FreeT . return . Pure
 
-    FreeT mf <*> FreeT ma =
+    FreeT mf <*> fma =
         FreeT $ do
             ff <- mf
-            fa <- ma
+            fa <- runFreeT fma
             return $ case ff of
                           Pure f ->
                               freefmap f fa
                           Free fx ->
-                              Free (fmap (<*> (FreeT ma)) fx)
+                              Free (fmap (<*> fma) fx)
                               
 
 instance (Functor f, Monad m) => Monad (FreeT f m) where
