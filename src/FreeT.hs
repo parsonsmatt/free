@@ -36,14 +36,8 @@ instance (Functor f, Monad m) => Applicative (FreeT f m) where
                                    Free fx ->
                                        Free $ fmap (fmap f) fx
                           Free fx ->
-                              case fa of
-                                   Pure a ->
-                                       undefined
-                                   Free fa ->
-                                       undefined
+                              Free (fmap (<*> (FreeT ma)) fx)
                               
-                                       
-                          
 
 instance (Functor f, Monad m) => Monad (FreeT f m) where
     return =
