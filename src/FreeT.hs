@@ -1,5 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-
 module FreeT where
 
 data FreeF f a x 
