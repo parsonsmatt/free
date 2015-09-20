@@ -5,20 +5,23 @@ data FreeF f a x
     | Free (f x)
 
 
+freefmap :: (Monad m, Functor f)
+         => (a -> b) 
+         -> FreeF f a (FreeT f m a) 
+         -> FreeF f b (FreeT f m b)
+freefmap f (Pure a) =
+    Pure (f a)
+freefmap f (Free fx) =
+    Free (fmap (fmap f) fx)
+
 newtype FreeT f m a
     = FreeT
     { runFreeT :: m (FreeF f a (FreeT f m a))
     }
 
 instance (Functor f, Monad m) => Functor (FreeT f m) where
-    fmap f (FreeT m) =
-        FreeT $ do
-            fa <- m
-            return $ case fa of
-                          Pure a ->
-                              Pure (f a)
-                          Free fx ->
-                              Free (fmap (fmap f) fx)
+    fmap f = 
+        FreeT . fmap (freefmap f) . runFreeT
 
 instance (Functor f, Monad m) => Applicative (FreeT f m) where
     pure =
@@ -30,11 +33,7 @@ instance (Functor f, Monad m) => Applicative (FreeT f m) where
             fa <- ma
             return $ case ff of
                           Pure f ->
-                              case fa of
-                                   Pure a ->
-                                       Pure (f a)
-                                   Free fx ->
-                                       Free $ fmap (fmap f) fx
+                              freefmap f fa
                           Free fx ->
                               Free (fmap (<*> (FreeT ma)) fx)
                               
